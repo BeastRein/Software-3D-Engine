@@ -23,6 +23,7 @@ public class object {
         this.rotated_points = this.points.clone();
     }
     public void project(point[] camera, int width, int height) {
+        //System.out.println((height));
         //set center object
         this.center = new point((float)(width / 2), (float)(height / 2), 0);
 
@@ -39,18 +40,19 @@ public class object {
             point.visible = true;
 
             //hide point if it is outside the bounds of the screen
-            if (point.x < -(width)) {
+            if (center.x + point.x < 20) {
                 point.visible = false;
             }
-            if (point.x > (width)) {
+            if (center.x + point.x > (width)-20) {
                 point.visible = false;
             }
-            if (point.y < -(height)) {
+            if (center.y + point.y < 50) {
                 point.visible = false;
             }
-            if (point.y > (height)) {
+            if (center.y + point.y > (height)-30) {
                 point.visible = false;
             }
+            //System.out.println(center.y + point.y);
             //apply changes
             this.rotated_points[i] = pos;
             this.projected_points[i] = point;
@@ -66,7 +68,7 @@ public class object {
         //draw points
         for (int i = 0; i < projected_points.length; i++) {
             point pnt = projected_points[i];
-            point center = new point((float)(frame.getSize().width / 2), (float)(frame.getSize().height / 2), 0);
+            //point center = new point((float)(frame.getSize().width), (float)(frame.getSize().height), 0);
             if (pnt.visible && (rotated_points[i].z > 0)) {
                 graphic2d.fillRect((int) (center.x + pnt.x), (int) (center.y + pnt.y), 3, 3);
             }
@@ -92,7 +94,8 @@ public class object {
                 }
                 //graphic2d.setColor(oldColor);
             }
-            //graphic2d.drawString("Z: " + (rotated_points[line[0]].z + rotated_points[line[1]].z) / 2, (int) (center.x + ((pnt1.x + pnt2.x) / 2)), (int) (center.y + ((pnt1.y + pnt2.y) / 2)));
+            //graphic2d.drawString("Y: " + (((1256/2) + (projected_points[line[0]].y*0.2))), (int) (center.x + projected_points[line[0]].x), (int) (center.y + projected_points[line[0]].y));
+
         }
 
         //create color map
