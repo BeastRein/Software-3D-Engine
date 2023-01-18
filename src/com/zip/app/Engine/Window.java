@@ -7,19 +7,24 @@ import java.util.Arrays;
 
 public class Window extends JFrame {
     Point3D rot = new Point3D(0,Math.toRadians(10),0);
-    Texture t1 = new Texture("unnamed.png");
+    Texture[] textures = new Texture[] {
+            new Texture("Assets/grass_side.png"),
+            new Texture("Assets/grass_top.png")
+    };
     int[][] FrameBuffer;
     double[][] ZBuffer;
     int count = 0;
-    public void drawfacetex(Point3D[] a) {
-        rot.y += 0.005;
-        count++;
+    Point3D camrot = new Point3D(Math.toRadians(45),Math.toRadians(10),0);
+    Point3D campos = new Point3D(0,0,400);
+    public void drawfacetex(Point3D[] a, Point3D location, int texID) {
         Point3D[] b = new Point3D[a.length];
-
+        camrot.x += 0.01;
         for (int i = 0; i < a.length; i++) {
             b[i] = Util.rotate(new Point3D(a[i].x, a[i].y, a[i].z), new Point3D(rot.x, rot.y, rot.z));
-            b[i].x = (8 * (b[i].x + 400 / 2)) / ((b[i].z + 1000) / 100);
-            b[i].y = (8 * (b[i].y + 400 / 2)) / ((b[i].z + 1000) / 100);
+            b[i] = Util.rotate(new Point3D(a[i].x+campos.x, a[i].y+campos.y, a[i].z+campos.z), new Point3D(camrot.x, camrot.y, camrot.z));
+            b[i].z += location.z;
+            b[i].x = (128 * (b[i].x + location.x / 2)) / ((b[i].z + (10000)) / 100)+(getWidth()/2);
+            b[i].y = (128 * (b[i].y + location.y / 2)) / ((b[i].z + (10000)) / 100)+(getHeight()/2);
         }
         Point3D[] points;
 
@@ -29,7 +34,7 @@ public class Window extends JFrame {
                 new Point3D(b[2].x, b[2].y, 0), //br
                 new Point3D(b[3].x, b[3].y, 0)  //tr
         };
-        BufferedImage tex = t1.project(points, getWidth(), getHeight());
+        BufferedImage tex = textures[texID].project(points, getWidth(), getHeight());
         Polygon polygon = new Polygon(new int[]{(int) b[0].x, (int) b[1].x, (int) b[2].x, (int) b[3].x, (int) b[0].x}, new int[]{(int) b[0].y, (int) b[1].y, (int) b[2].y, (int) b[3].y, (int) b[0].y}, 4);
         double[] plane = Util.createPlane(b[0].x, b[1].x, b[2].x, b[0].y, b[1].y, b[2].y, b[0].z, b[1].z, b[2].z);
         double[] plane1 = Util.createPlane(b[0].x, b[3].x, b[2].x, b[0].y, b[3].y, b[2].y, b[0].z, b[3].z, b[2].z);
@@ -66,61 +71,37 @@ public class Window extends JFrame {
     }
     @Override
     public void paint(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        //reset framebuffer
         ZBuffer = new double[getHeight()][getWidth()];
         FrameBuffer = new int[getHeight()][getWidth()];
-        for (int y = 0; y < ZBuffer.length; y++) {
-            Arrays.fill(ZBuffer[y], Double.MAX_VALUE);
+        for (double[] doubles : ZBuffer) {
+            Arrays.fill(doubles, Double.MAX_VALUE);
         }
-        Graphics2D g2d = (Graphics2D) g;
-
+        count++;
+        //rot.y += 0.1;
         //cube
-        Point3D[] points = new Point3D[]{
-                new Point3D(-100, -100, -100), //tl
-                new Point3D(-100, 100, -100), //bl
-                new Point3D(100, 100, -100), //br
-                new Point3D(100, -100, -100) //bl
-        };
-        drawfacetex(points);
-        Point3D[] points1 = new Point3D[]{
-                new Point3D(-100, -100, 100), //tl
-                new Point3D(-100, 100, 100), //bl
-                new Point3D(100, 100, 100), //br
-                new Point3D(100, -100, 100) //bl
-        };
-        drawfacetex(points1);
-        Point3D[] points2 = new Point3D[]{
-                new Point3D(100, -100, -100), //tl
-                new Point3D(100, 100, -100), //bl
-                new Point3D(100, 100, 100), //br
-                new Point3D(100, -100, 100) //bl
-        };
-        drawfacetex(points2);
-        Point3D[] points3 = new Point3D[]{
-                new Point3D(-100, -100, -100), //tl
-                new Point3D(-100, 100, -100), //bl
-                new Point3D(-100, 100, 100), //br
-                new Point3D(-100, -100, 100) //bl
-        };
-        drawfacetex(points3);
-        Point3D[] points4 = new Point3D[]{
-                new Point3D(-100, 100,  100), //tl
-                new Point3D(-100, 100, -100), //bl
-                new Point3D(100, 100, -100), //br
-                new Point3D( 100, 100, 100) //bl
-        };
-        drawfacetex(points4);
-        Point3D[] points5 = new Point3D[]{
-                new Point3D(-100, -100,  100), //tl
-                new Point3D(-100, -100, -100), //bl
-                new Point3D(100, -100, -100), //br
-                new Point3D( 100, -100, 100) //bl
-        };
-        drawfacetex(points5);
+        Block block = new Block(-400,0,0,0);
+        for (int i = 0; i < block.faces.length; i++) {
+            if (i > 3) {
+                drawfacetex(block.faces[i], block.location, 1);
+            } else {
+                drawfacetex(block.faces[i], block.location, 0);
+            }
+        }
+        Block block1 = new Block(0,400,0,0);
+        for (int i = 0; i < block.faces.length; i++) {
+            if (i > 3) {
+                drawfacetex(block1.faces[i], block1.location, 1);
+            } else {
+                drawfacetex(block1.faces[i], block1.location, 0);
+            }
+        }
 
         BufferedImage out = new BufferedImage(getWidth(),getHeight(),BufferedImage.TYPE_INT_RGB);
-        for (int y = 0; y < getHeight()-1; y++) {
-            for (int x = 0; x < getWidth()-1; x++) {
-                out.setRGB(x,y,(int)FrameBuffer[y][x]);
+        for (int y = 0; y < FrameBuffer.length; y++) {
+            for (int x = 0; x < FrameBuffer[y].length; x++) {
+                out.setRGB(x,y, FrameBuffer[y][x]);
             }
         }
         out.getGraphics().drawImage(out, 0, 0, null);
@@ -134,12 +115,10 @@ public class Window extends JFrame {
         this.setIgnoreRepaint(true);
         this.setTitle("Cube");
         this.setMinimumSize(new Dimension(800, 600));
-        (new Thread() {
-            public void run() {
-                while (true) {
-                    repaint();
-                }
+        (new Thread(() -> {
+            while (true) {
+                repaint();
             }
-        }).start();
+        })).start();
     }
 }

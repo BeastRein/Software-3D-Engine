@@ -38,7 +38,7 @@ public class Util {
     }
     public static double resolveZ(double x, double y, double[] plane) {
         if (plane[2] == 0) {
-            return -1;//Double.MAX_VALUE;
+            return Double.MAX_VALUE;
         }
         return (- (plane[0] * x + plane[1] * y + plane[3]) / plane[2]);
     }
